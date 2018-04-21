@@ -12,6 +12,7 @@ var game = function() {
 		var mario = stage.insert(new Q.Mario());
 		var goomba = stage.insert(new Q.Goomba());
 		var bloopa = stage.insert(new Q.Bloopa());
+		var princess = stage.insert(new Q.Princess());
 
 		stage.add("viewport").follow(mario);
 		stage.viewport.offsetX = -130;
@@ -36,7 +37,8 @@ var game = function() {
 	
 	Q.load(["mario_small.png","mario_small.json",
 					"goomba.png", "goomba.json", 
-					"bloopa.png", "bloopa.json"], function(){
+					"bloopa.png", "bloopa.json",
+					"princess.png"], function(){
 
 		Q.compileSheets("mario_small.png","mario_small.json");
 		Q.compileSheets("goomba.png", "goomba.json");
@@ -65,7 +67,7 @@ var game = function() {
 			if(this.p.y >= 800){
 				this.p.sheet = "mario";
 				this.destroy();
-				Q.stageScene("endGame", 1, {label: "You Died"});
+				Q.stageScene("endGame", 1, {label: "You Died!"});
 			}
 		}
 	});
@@ -98,14 +100,11 @@ var game = function() {
 		stomp: function(collision){
 			if(collision.obj.isA("Mario")){
 				collision.obj.destroy();
-				Q.stageScene("endGame", 1, {label: "You Died"});
-				//collision.obj.p.sheet = "mario";
-				//collision.obj.p.frame = 0;
-				//collision.obj.p.x = 30;
-				//collision.obj.p.y = 380;
+				Q.stageScene("endGame", 1, {label: "You Died!"});
 			}
 		}
 	});
+
 
 
 //-------------BLOOPA----------------
@@ -115,7 +114,7 @@ var game = function() {
 			this._super(p,{
 				sheet: "bloopa",
 				frame: 0,
-				x: 1150,
+				x: 1200,
 				y:380,
 				vy: -350,
 				gravityY: 5*100
@@ -140,12 +139,31 @@ var game = function() {
 		stomp: function(collision){
 			if(collision.obj.isA("Mario")){
 				collision.obj.destroy();
-				Q.stageScene("endGame", 1, {label: "You Died"});
-				//collision.obj.p.sheet = "mario";
-				//collision.obj.p.frame = 0;
-				//collision.obj.p.x = 30;
-				//collision.obj.p.y = 380;
+				Q.stageScene("endGame", 1, {label: "You Died!"});
+			}
+		}
+	});
+
+
+
+//-------------PRINCESS----------------
+
+	Q.Sprite.extend("Princess", {
+		init:function(p){
+			this._super(p,{
+				asset: "princess.png",
+				x: 2000,
+				y:380
+			});
+			this.add('2d');
+			this.on("bump.left, bump.right, bump.bottom, bump.top", this, "sensor");
+		},
+		sensor: function(collision){
+			if(collision.obj.isA("Mario")){
+				collision.obj.destroy();
+				Q.stageScene("endGame", 1, {label: "You Won!"});
 			}
 		}
 	});
 }
+
