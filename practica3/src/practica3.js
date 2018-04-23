@@ -7,6 +7,27 @@ var game = function() {
 			.controls().touch();
 
 	//--------------LEVEL-----------------
+
+	Q.scene("mainTitle", function(stage){
+		var container = stage.insert(new Q.UI.Container({
+			x:Q.width,
+			y:Q.width
+		}));
+
+		var button = container.insert(new Q.UI.Button({
+			x:-Q.width/2,
+			y:-Q.width/2,
+			fill: "#CCCCCC",
+			asset: "mainTitle.png"
+		}));
+
+		button.on("click", function(){
+			Q.stageScene("level1");
+		});
+
+		container.fit(20);
+	});
+
 	Q.scene("level1",function(stage) {
 		Q.stageTMX("level.tmx",stage);
 		var mario = stage.insert(new Q.Mario());
@@ -20,7 +41,6 @@ var game = function() {
 		stage.centerOn(150, 380);
 	});
 
-
 	Q.scene("endGame",function(stage){
 		var container = stage.insert(new Q.UI.Container({
 			x: Q.width/2, y: Q.height/2 , fill: "rgba(0,0,0,0.5)"
@@ -29,12 +49,11 @@ var game = function() {
 		var label = container.insert(new Q.UI.Text({x:10, y:-10 - button.p.h, label: stage.options.label}));
 		button.on("click", function(){
 			Q.clearStages();
-			Q.stageScene("level1");
+			Q.stageScene("mainTitle");
 		});
 		container.fit(20);
 	});
 
-	
 	Q.load(["mario_small.png","mario_small.json",
 					"goomba.png", "goomba.json", 
 					"bloopa.png", "bloopa.json",
@@ -166,4 +185,3 @@ var game = function() {
 		}
 	});
 }
-
