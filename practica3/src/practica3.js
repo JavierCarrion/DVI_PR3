@@ -6,28 +6,26 @@ var game = function() {
 					height:480})
 			.controls().touch();
 
-	//--------------LEVEL-----------------
+//--------------HOME_SCREEN-----------------
 
 	Q.scene("mainTitle", function(stage){
 		var container = stage.insert(new Q.UI.Container({
 			x:Q.width,
-			y:Q.width
+			y:Q.height
 		}));
-
 		var button = container.insert(new Q.UI.Button({
 			x:-Q.width/2,
-			y:-Q.width/2,
+			y:-Q.height/2,
 			fill: "#CCCCCC",
 			asset: "mainTitle.png"
 		}));
-
 		button.on("click", function(){
 			Q.stageScene("level1");
 		});
-
 		container.fit(20);
 	});
 
+//-------------LEVEL1----------------
 	Q.scene("level1",function(stage) {
 		Q.stageTMX("level.tmx",stage);
 		var mario = stage.insert(new Q.Mario());
@@ -41,12 +39,24 @@ var game = function() {
 		stage.centerOn(150, 380);
 	});
 
+//-------------END_GAME----------------
 	Q.scene("endGame",function(stage){
 		var container = stage.insert(new Q.UI.Container({
-			x: Q.width/2, y: Q.height/2 , fill: "rgba(0,0,0,0.5)"
+			x: Q.width/2,
+			y: Q.height/2,
+			fill:"rgba(0,0,0,0.5)"
 		}));
-		var button = container.insert(new Q.UI.Button({x:0, y:0, fill: "#CCCCCC", label: "Play Again"}))
-		var label = container.insert(new Q.UI.Text({x:10, y:-10 - button.p.h, label: stage.options.label}));
+		var button = container.insert(new Q.UI.Button({
+			x:0,
+			y:0,
+			fill:"#CCCCCC",
+			label:"Play Again"
+		}))
+		var label = container.insert(new Q.UI.Text({
+			x:10,
+			y:-10 - button.p.h,
+			label:stage.options.label
+		}));
 		button.on("click", function(){
 			Q.clearStages();
 			Q.stageScene("mainTitle");
@@ -54,40 +64,80 @@ var game = function() {
 		container.fit(20);
 	});
 
+
+//-------------LOAD_RESOURCES----------------
 	Q.load(["mario_small.png","mario_small.json",
 					"goomba.png", "goomba.json", 
 					"bloopa.png", "bloopa.json",
-					"princess.png"], function(){
+					"princess.png","mainTitle.png"], function(){
 
 		Q.compileSheets("mario_small.png","mario_small.json");
 		Q.compileSheets("goomba.png", "goomba.json");
 		Q.compileSheets("bloopa.png", "bloopa.json");
 
 		Q.loadTMX('level.tmx', function() {
-			Q.stageScene("level1");
+			Q.stageScene("mainTitle");
 		});
 	});
 
 
+//-------------ANIMATIONS-------------
+	Q.animations("mario", {
+		move_right: 	{ frames: [1,2,3],    rate: 1/9 }, 
+		move_left: 		{ frames: [15,16,17], rate:1/9 },
+		stand_right: 	{ frames: [0],  rate: 1/5 },
+		stand_left: 	{ frames: [14], rate: 1/5 },
+		died: 			{ frames: [12], rate: 1/5, loop: false },
+		fall_right: 	{ frames: [2],  rate: 1/5, loop: false },
+		fall_left: 		{ frames: [16], rate: 1/5, loop: false },
+		jump_right:     { frames: [4],  rate: 1/9, loop: false },
+		jump_left: 		{ frames: [18], rate: 1/9, loop: false }
+	});
 
-	//-------------MARIO----------------
+//-------------MARIO----------------
 	Q.Sprite.extend("Mario", {
 		init:function(p){
 			this._super(p,{
+				sprite: "mario",
 				sheet: "mario",
 				frame: 0,
 				x: 30,
 				y:380
 			});
-			this.add('2d, platformerControls');
+			this.add('2d, platformerControls, animation');
 		},
+
+
 
 		step: function(){
 			if(this.p.y >= 800){
-				this.p.sheet = "mario";
+				this.p.vy = -200;
+				this.play("died");
 				this.destroy();
 				Q.stageScene("endGame", 1, {label: "You Died!"});
 			}
+			if(this.p.vx > 0) {
+		     	this.play("move_right");
+		    } else if(this.p.vx < 0) {
+		      	this.play("move_left");
+		    } else {
+		    	if(this.p.vy >= 0){
+		    		if(this.p.direction >= 0){
+			    		this.play("fall_right");
+			    	} else{
+			    		this.play("fall_left");
+			    	}
+			    } else{
+			    	if(this.p.direction >= 0){
+			    		this.play("stand_right");
+			    	} else{
+			    		this.play("stand_left");
+			    	}
+			    }
+		    }
+		    if(this.p.vy < 0){
+		    	this.play("jump_" + this.p.direction > 0 ? "right" : "left");
+		    }
 		}
 	});
 
