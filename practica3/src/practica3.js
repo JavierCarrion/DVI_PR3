@@ -84,25 +84,26 @@ var game = function() {
 //-------------ANIMATIONS-------------
 	Q.animations("mario", {
 		move_right: 	{ frames: [1,2,3],    rate: 1/9 }, 
-		move_left: 		{ frames: [15,16,17], rate: 1/9 },
-		stand_right: 	{ frames: [0],		  rate: 1/5 },
-		stand_left: 	{ frames: [14], 	  rate: 1/5 },
-		died: 			{ frames: [12], 	  rate: 1, loop: false, trigger:"dying" },
-		fall_right: 	{ frames: [2],  	  rate: 1/5, loop: false },
-		fall_left: 		{ frames: [16], 	  rate: 1/5, loop: false },
-		jump_right:     { frames: [4],  	  rate: 1/5, loop: false },
-		jump_left: 		{ frames: [18],	 	  rate: 1/5, loop: false }
+		move_left: 		{ frames: [15,16,17], rate:1/9 },
+		stand_right: 	{ frames: [0],  rate: 1/5 },
+		stand_left: 	{ frames: [14], rate: 1/5 },
+		died: 			{ frames: [12], rate: 1/5, loop: false, trigger:"died"},
+		fall_right: 	{ frames: [2],  rate: 1/5, loop: false },
+		fall_left: 		{ frames: [16], rate: 1/5, loop: false },
+		jump_right:     { frames: [4],  rate: 1/5, loop: false },
+		jump_left: 		{ frames: [18], rate: 1/5, loop: false }
 	});
 
 	Q.animations("goomba", {
-		move: { frames: [0,1], rate: 1/4 },
-		died: { frames: [2],   rate: 1, loop: false, trigger:"dying" }
+		move_right: 	{ frames: [0], rate: 1/9 }, 
+		move_left: 		{ frames: [1], rate: 1/9 },
+		died: 			{ frames: [2], rate: 1/5, loop: false, trigger: "died" }
 	});
 
 	Q.animations("bloopa", {
-		move_up: 	{ frames: [0], rate: 1/5 }, 
-		move_down: 	{ frames: [1], rate: 1/5 },
-		died: 		{ frames: [1], rate: 1, loop: false, trigger:"dying" },
+		move_up: 		{ frames: [0], rate: 1/9 }, 
+		move_down: 		{ frames: [1], rate: 1/9 },
+		died: 			{ frames: [2], rate: 1/5, loop: false, trigger: "died" }
 	});
 
 //-------------MARIO----------------
@@ -113,46 +114,47 @@ var game = function() {
 				sheet: "mario",
 				frame: 0,
 				x: 30,
-				y:380
+				y: 380
 			});
 			this.add('2d, platformerControls, animation');
-			this.on("dying", this, "kill");
+			this.on("died", this, "kill");
 		},
 
 		step: function(){
 			if(this.p.y >= 800){
-				this.p.vy = -400;
-				this.play("died", 3);
-				Q.stageScene("endGame", 1, {label: "You Died!"});
-			}else{
-				if(this.p.vx > 0) {
-			     	this.play("move_right", 1);
-			    } else if(this.p.vx < 0) {
-			      	this.play("move_left", 1);
-			    }
-			    if(this.p.vy > 0){
-			    	if(this.p.direction === "right"){
-				    	this.play("fall_right", 1);
-				   	} else{
-				   		this.play("fall_left", 1);
-				   	}
-				} else if(this.p.vy === 0 && this.p.vx === 0){
-			    	if(this.p.direction === "right"){
-				   		this.play("stand_right", 1);
-			    	} else{
-			    		this.play("stand_left", 1);
-			    	}
-			    } else if(this.p.vy < 0){
-			   		if(this.p.direction === "right"){
-				   		this.play("jump_right", 2);
-					} else{
-						this.play("jump_left", 2);
-					}
-			    }
+				this.p.vy = -200;
+				this.play("died");
 			}
+			if(this.p.vx > 0) {
+		     	this.play("move_right");
+		    } else if(this.p.vx < 0) {
+		      	this.play("move_left");
+		    }
+		    if(this.p.vy > 0){
+		    	if(this.p.direction === "right"){
+			    	this.play("fall_right");
+			   	} else{
+			   		this.play("fall_left");
+			   	}
+			} else if(this.p.vy === 0 && this.p.vx === 0){
+		    	if(this.p.direction === "right"){
+			   		this.play("stand_right");
+		    	} else{
+		    		this.play("stand_left");
+		    	}
+		    } else if(this.p.vy < 0){
+		   		if(this.p.direction === "right"){
+			   		this.play("jump_right", 1);
+				} else{
+					this.play("jump_left", 1);
+				}
+		    }
 		},
+
+
 		kill: function(){
 			this.destroy();
+			Q.stageScene("endGame", 1, {label: "You Died!"});
 		}
 	});
 
@@ -161,40 +163,43 @@ var game = function() {
 //-------------GOOMBA----------------
 
 	Q.Sprite.extend("Goomba", {
-		init:function(p){
+		init: function(p){
 			this._super(p,{
 				sprite: "goomba",
 				sheet: "goomba",
 				frame: 0,
 				x: 1500,
-				y: 380,
+				y:  380,
 				vx: 80
 			});
 			this.add('2d, aiBounce, animation');
 			this.on("bump.left, bump.right, bump.bottom", this, "stomp");
-			this.on("bump.top", this, "smash");
-			this.play("move");
-			this.on("dying", this, "kill");
+			this.on("bump.top",this, "smash");
+			this.on("died", this, "kill");
 		},
 
-		smash: function(collision){
-			if(collision.obj.isA("Mario")){
-				collision.obj.p.vy = -300;
-				this.p.vx = 0;
-				this.play("died");
-			}
+		step: function(){
+			if(this.p.vx > 0)
+				this.play("move_right");
+			else
+				this.play("move_left");
 		},
 
 		kill: function(){
 			this.destroy();
 		},
 
+		smash: function(collision){
+			if(collision.obj.isA("Mario"))
+				this.play("died");
+				collision.obj.p.vy = -300;
+		},
+
 		stomp: function(collision){
 			if(collision.obj.isA("Mario")){
-				collision.obj.p.vy = -400;
+				collision.obj.p.vy = -300;
 				collision.obj.p.vx = 0;
-				collision.obj.play("died", 3);
-				Q.stageScene("endGame", 1, {label: "You Died!"});
+				collision.obj.play("died");
 			}
 		}
 	});
@@ -217,34 +222,35 @@ var game = function() {
 			this.add('2d, animation');
 			this.on("bump.left, bump.right, bump.bottom", this, "stomp");
 			this.on("bump.top",this, "smash");
-			this.on("dying", this, "kill");
+			this.on("died", this, "kill");
 		},
+
 		step: function(){
 			if(this.p.y >= 519){
 				this.p.vy = -350;
-				this.play("move_up");
 			}
-			if(this.p.vy > 0)
+			if(this.p.vy >= 0)
 				this.play("move_down");
-		},
-
-		smash: function(collision){
-			if(collision.obj.isA("Mario")){
-				collision.obj.p.vy = -300;
-				this.p.vx = 0;
-				this.play("died");
-			}
+			else
+				this.play("move_up");
 		},
 
 		kill: function(){
 			this.destroy();
+		}
+
+		smash: function(collision){
+			if(collision.obj.isA("Mario")){
+				this.play("died");
+				collision.obj.p.vy = -300;
+			}
 		},
 
 		stomp: function(collision){
 			if(collision.obj.isA("Mario")){
-				collision.obj.p.vy = -400;
-				collision.obj.play("died", 3);
-				Q.stageScene("endGame", 1, {label: "You Died!"});
+				collision.obj.p.vy = -300;
+				collision.obj.p.vx = 0;
+				collision.obj.play("died");
 			}
 		}
 	});
