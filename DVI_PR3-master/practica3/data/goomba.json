@@ -1,0 +1,5 @@
+{
+	"goomba":{"sx":0,"sy":0,"tileW":32,"tileH":32,"frames":3},
+	"goombaB":{"sx":0,"sy":32,"tileW":32,"tileH":32,"frames":3},
+	"goombaG":{"sx":0,"sy":64,"tileW":32,"tileH":32,"frames":3}
+}
