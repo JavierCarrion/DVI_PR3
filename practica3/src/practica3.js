@@ -145,42 +145,48 @@ var game = function() {
 				sheet: "mario",
 				frame: 0,
 				x: 30,
-				y:380
+				y:380,
+				jumpSpeed: -370,
+				playing: true
 			});
 			this.add('2d, platformerControls, animation');
 			this.on("dying", this, "kill");
 		},
 
 		step: function(){
-			if(this.p.y >= 800){
-				this.p.vy = -400;
-				this.play("died", 3);
-				Q.stageScene("endGame", 1, {label: "You Died!"});
-			}else{
-				if(this.p.vx > 0) {
-			     	this.play("move_right", 1);
-			    } else if(this.p.vx < 0) {
-			      	this.play("move_left", 1);
-			    }
-			    if(this.p.vy > 0){
-			    	if(this.p.direction === "right"){
-				    	this.play("fall_right", 1);
-				   	} else{
-				   		this.play("fall_left", 1);
-				   	}
-				} else if(this.p.vy === 0 && this.p.vx === 0){
-			    	if(this.p.direction === "right"){
-				   		this.play("stand_right", 1);
-			    	} else{
-			    		this.play("stand_left", 1);
-			    	}
-			    } else if(this.p.vy < 0){
-			   		if(this.p.direction === "right"){
-				   		this.play("jump_right", 2);
-					} else{
-						this.play("jump_left", 2);
-					}
-			    }
+			if(this.p.playing){
+				if(this.p.y >= 800){
+					this.p.vy = -400;
+					this.p.playing = false;
+					this.del("platformerControls");
+					this.play("died", 3);
+					Q.stageScene("endGame", 1, {label: "You Died!"});
+				}else{
+					if(this.p.vx > 0) {
+				     	this.play("move_right", 1);
+				    } else if(this.p.vx < 0) {
+				      	this.play("move_left", 1);
+				    }
+				    if(this.p.vy > 0){
+				    	if(this.p.direction === "right"){
+					    	this.play("fall_right", 1);
+					   	} else{
+					   		this.play("fall_left", 1);
+					   	}
+					} else if(this.p.vy === 0 && this.p.vx === 0){
+				    	if(this.p.direction === "right"){
+					   		this.play("stand_right", 1);
+				    	} else{
+				    		this.play("stand_left", 1);
+				    	}
+				    } else if(this.p.vy < 0){
+				   		if(this.p.direction === "right"){
+					   		this.play("jump_right", 2);
+						} else{
+							this.play("jump_left", 2);
+						}
+				    }
+				}
 			}
 		},
 		kill: function(){
@@ -224,7 +230,8 @@ var game = function() {
 		stomp: function(collision){
 			if(collision.obj.isA("Mario")){
 				collision.obj.p.vy = -400;
-				collision.obj.p.vx = 0;
+				collision.obj.p.playing = false;
+				collision.obj.del("platformerControls");
 				collision.obj.play("died", 3);
 				Q.stageScene("endGame", 1, {label: "You Died!"});
 			}
@@ -244,16 +251,17 @@ var game = function() {
 				x: 1214,
 				y: 380,
 				vy: -350,
-				gravityY: 5*100
+				gravityY: 5*100,
+				bLiving: true
 			});
-			living = true;
+			
 			this.add('2d, animation');
 			this.on("bump.left, bump.right, bump.bottom", this, "stomp");
 			this.on("bump.top",this, "smash");
 			this.on("dying", this, "kill");
 		},
 		step: function(){
-			if(living){
+			if(this.p.bLiving){
 				if(this.p.y >= 519){
 					this.p.vy = -350;
 					this.play("move_up");
@@ -265,7 +273,7 @@ var game = function() {
 
 		smash: function(collision){
 			if(collision.obj.isA("Mario")){
-				living = false;
+				this.p.bLiving = false;
 				collision.obj.p.vy = -350;
 				this.p.vy = 0;
 				this.play("died",1);
@@ -279,6 +287,8 @@ var game = function() {
 		stomp: function(collision){
 			if(collision.obj.isA("Mario")){
 				collision.obj.p.vy = -400;
+				collision.obj.p.playing = false;
+				collision.obj.del("platformerControls");
 				collision.obj.play("died", 3);
 				Q.stageScene("endGame", 1, {label: "You Died!"});
 			}
@@ -302,6 +312,7 @@ var game = function() {
 		sensor: function(collision){
 			if(collision.obj.isA("Mario")){
 				//collision.obj.destroy();
+				collision.obj.p.playing = false;
 				collision.obj.del("platformerControls");
 				Q.stageScene("endGame", 1, {label: "You Won!"});
 			}
