@@ -68,11 +68,6 @@ var game = function() {
 		container.fit(20);
 	});
 
-	Q.scene("mario_dying",function(stage){
-		Q.stageTMX("level.tmx",stage);
-		var mario = stage.insert(new Q.MarioD({x:stage.options.x, y:stage.options.y, frame:stage.options.frame}));
-	});
-
 
 //-------------LOAD_RESOURCES----------------
 	Q.load(["mario_small.png","mario_small.json",
@@ -201,24 +196,6 @@ var game = function() {
 		}
 	});
 
-//-------------MARIO_DYING----------------
-	Q.Sprite.extend("MarioD", {
-		init:function(p){
-			this._super(p,{
-				sprite: "mario",
-				sheet: "mario",
-				vx: 0
-			});
-			this.add('2d, animation');
-			this.p.vy = -400;
-			this.play("died");
-			this.on("dying", this, "kill");
-		},
-
-		kill: function(){
-			this.destroy();
-		}
-	});
 
 //-------------GOOMBA----------------
 
@@ -253,11 +230,10 @@ var game = function() {
 
 		stomp: function(collision){
 			if(collision.obj.isA("Mario")){
-				var mx = collision.obj.p.x;
-				var my = collision.obj.p.y;
-				var mframe = collision.obj.p.frame;
-				collision.obj.destroy();
-				Q.stageScene("mario_dying", 1, {x:mx, y:my, frame:mframe});
+				collision.obj.p.vy = -400;
+				collision.obj.p.playing = false;
+				collision.obj.del("platformerControls");
+				collision.obj.play("died", 3);
 				Q.stageScene("endGame", 1, {label: "You Died!"});
 			}
 		}
@@ -310,11 +286,10 @@ var game = function() {
 
 		stomp: function(collision){
 			if(collision.obj.isA("Mario")){
-				var mx = collision.obj.p.x;
-				var my = collision.obj.p.y;
-				var mframe = collision.obj.p.frame;
-				collision.obj.destroy();
-				Q.stageScene("mario_dying", 1, {x:mx, y:my, frame:mframe});
+				collision.obj.p.vy = -400;
+				collision.obj.p.playing = false;
+				collision.obj.del("platformerControls");
+				collision.obj.play("died", 3);
 				Q.stageScene("endGame", 1, {label: "You Died!"});
 			}
 		}
