@@ -20,6 +20,9 @@ var game = function() {
 			asset: "mainTitle.png"
 		}));
 		button.on("click", function(){
+			Q.clearStages();
+			Q.state.reset({score:0});
+			Q.stageScene('HUD', 2);
 			Q.stageScene("level1");
 		});
 		container.fit(20);
@@ -36,7 +39,7 @@ var game = function() {
 		var coin2 = stage.insert(new Q.Coin({x:1000, y:460}));
 		var coin3 = stage.insert(new Q.Coin({x:1400, y:400}));
 		var coin4 = stage.insert(new Q.Coin({x:1650, y:390}));
-		var hud = stage.insert(new Q.Score());
+		//var hud = stage.insert(new Q.Score());
 
 
 		stage.add("viewport").follow(mario);
@@ -65,8 +68,8 @@ var game = function() {
 		}));
 		button.on("click", function(){
 			Q.clearStages();
-			Q.state.reset({score:0});
-			Q.stageScene('HUD', 2);
+//			Q.state.reset({score:0});
+//			Q.stageScene('HUD', 2);
 			Q.stageScene("mainTitle");
 		});
 		container.fit(20);
@@ -123,8 +126,9 @@ var game = function() {
 			this._super(p,{
 				sprite:"coin",
 				sheet:"coin",
-				frame: 2,
-				sensor: true
+				frame: 0,
+				sensor: true,
+				collected: false
 			});
 			this.add('tween, animation');
 			this.on("sensor", this, "collect");
@@ -132,10 +136,11 @@ var game = function() {
 		},
 
 		collect: function(collision){
-			if(collision.isA("Mario")){
+			if(!this.p.collected && collision.isA("Mario")){
+				Q.state.inc('score', 1);
+				this.p.collected = true;
 				var that = this;
 				this.animate({y:that.p.y -60}, 0.4, Q.Easing.Quadratic.Out, {callback: function(){that.destroy();}});
-				Q.state.inc('score', 1);
 			}
 		}
 	});
@@ -145,7 +150,7 @@ var game = function() {
 		init: function(p){
 			this._super({
 				label: 'score: 0',
-				x: 60,
+				x: 100,
 				y: 0
 			});
 			Q.state.on('change.score', this, 'score');
@@ -217,6 +222,32 @@ var game = function() {
 		kill: function(){
 			this.destroy();
 		}
+	});
+
+//------------DEFAULT ENEMY---------------
+	Q.component("defaultEnemy",{
+		added:function(){
+			this.entity.on("bump.left, bump.right, bump.bottom", function(collision){
+				if(collision.obj.isA("Mario")){
+					collision.obj.p.vy = -400;
+					collision.obj.p.playing = false;
+					collision.obj.del("platformerControls");
+					collision.obj.play("died", 3);
+					Q.stageScene("endGame", 1, {label: "You Died!"});
+				}
+			});
+			this.entity.on("bump.top", function(collision){
+				if(collision.obj.isA("Mario")){
+					this.p.living = false;
+					collision.obj.p.vy = -350;
+					this.p.vy = 0;
+					this.play("died",1);
+				}
+			});
+			this.entity.on("dying", function(){
+				this.destroy();
+			});
+		},
 	});
 
 //-------------GOOMBA----------------
@@ -336,35 +367,6 @@ var game = function() {
 				collision.obj.destroy();
 				Q.stageScene("endGame", 1, {label: "You Won!"});
 			}
-		}
-	});
-
-//------------DEFAULT ENEMY---------------
-	
-	Q.Component("defaultEnemy",{
-		added:function(){
-			this.entity.on("bump.left, bump.right, bump.bottom", function(collision){
-				if(collision.obj.isA("Mario")){
-					collision.obj.p.vy = -400;
-					collision.obj.p.playing = false;
-					collision.obj.del("platformerControls");
-					collision.obj.play("died", 3);
-					Q.stageScene("endGame", 1, {label: "You Died!"});
-				}
-			});
-
-			this.entity.on("bump.top", function(collision){
-				if(collision.obj.isA("Mario")){
-					this.p.living = false;
-					collision.obj.p.vy = -350;
-					this.p.vy = 0;
-					this.play("died",1);
-				}
-			});
-
-			this.entity.on("dying", function(collision){
-				this.destroy();
-			});
 		}
 	});
 }
