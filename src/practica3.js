@@ -233,7 +233,7 @@ var game = function() {
 	Q.component("defaultEnemy",{
 		added:function(){
 			this.entity.on("bump.left, bump.right, bump.bottom", function(collision){
-				if(collision.obj.isA("Mario")){
+				if(collision.obj.p.playing && collision.obj.isA("Mario")){
 					collision.obj.p.vy = -400;
 					collision.obj.p.playing = false;
 					collision.obj.del("platformerControls");
