@@ -123,7 +123,7 @@ var game = function() {
 			this._super(p,{
 				sprite:"coin",
 				sheet:"coin",
-				frame:2,
+				frame: 2,
 				sensor: true
 			});
 			this.add('tween, animation');
@@ -234,66 +234,10 @@ var game = function() {
 			});
 			this.add('2d, aiBounce, animation, defaultEnemy');
 			this.play("move");
-		}
-	});
-
-//-------------BLOOPA----------------
-
-	Q.Sprite.extend("Bloopa", {
-		init:function(p){
-			this._super(p,{
-				sprite: "bloopa",
-				sheet: "bloopa",
-				frame: 0,
-				x: 1214,
-				y: 380,
-				vy: -350,
-				gravityY: 5*100,
-				living: true
-			});
-			this.add('2d, animation, defaultEnemy');
-		},
-
-		step: function(){
-			if(this.p.living){
-				if(this.p.y >= 519){
-					this.p.vy = -350;
-					this.play("move_up");
-				}
-				if(this.p.vy > 0)
-					this.play("move_down");
-			}
-		}
-	});
-
-//-------------PRINCESS----------------
-
-	Q.Sprite.extend("Princess", {
-		init:function(p){
-			this._super(p,{
-				asset: "princess.png",
-				x: 2000,
-				y:380
-			});
-			this.add('2d');
-			this.on("bump.left, bump.right, bump.bottom, bump.top", this, "sensor");
-		},
-		sensor: function(collision){
-			if(collision.obj.isA("Mario")){
-				collision.obj.destroy();
-				Q.stageScene("endGame", 1, {label: "You Won!"});
-			}
-		}
-	});
-
-//------------DEFAULT ENEMY---------------
-	
-	Q.Component.extend("defaultEnemy",{
-		added:function(){
-			this.entity.on("bump.left, bump.right, bump.bottom", this, "stomp");
-			this.entity.on("bump.top",this, "smash");
-			this.entity.on("dying", this, "kill");
-		},
+			/*this.on("bump.left, bump.right, bump.bottom", this, "stomp");
+			this.on("bump.top",this, "smash");
+			this.on("dying", this, "kill");*/
+		}/*,
 
 		smash: function(collision){
 			if(collision.obj.isA("Mario")){
@@ -316,6 +260,111 @@ var game = function() {
 				collision.obj.play("died", 3);
 				Q.stageScene("endGame", 1, {label: "You Died!"});
 			}
+		}*/
+	});
+
+//-------------BLOOPA----------------
+
+	Q.Sprite.extend("Bloopa", {
+		init:function(p){
+			this._super(p,{
+				sprite: "bloopa",
+				sheet: "bloopa",
+				frame: 0,
+				x: 1214,
+				y: 380,
+				vy: -350,
+				gravityY: 5*100,
+				living: true
+			});
+			this.add('2d, animation, defaultEnemy');
+			/*this.on("bump.left, bump.right, bump.bottom", this, "stomp");
+			this.on("bump.top",this, "smash");
+			this.on("dying", this, "kill");*/
+		},
+
+		step: function(){
+			if(this.p.living){
+				if(this.p.y >= 519){
+					this.p.vy = -350;
+					this.play("move_up");
+				}
+				if(this.p.vy > 0)
+					this.play("move_down");
+			}
+		}/*,
+
+		smash: function(collision){
+			if(collision.obj.isA("Mario")){
+				this.p.living = false;
+				collision.obj.p.vy = -350;
+				this.p.vy = 0;
+				this.play("died",1);
+			}
+		},
+
+		kill: function(){
+			this.destroy();
+		},
+
+		stomp: function(collision){
+			if(collision.obj.isA("Mario")){
+				collision.obj.p.vy = -400;
+				collision.obj.p.playing = false;
+				collision.obj.del("platformerControls");
+				collision.obj.play("died", 3);
+				Q.stageScene("endGame", 1, {label: "You Died!"});
+			}
+		}*/
+	});
+
+//-------------PRINCESS----------------
+
+	Q.Sprite.extend("Princess", {
+		init:function(p){
+			this._super(p,{
+				asset: "princess.png",
+				x: 2000,
+				y:380
+			});
+			this.add('2d');
+			this.on("bump.left, bump.right, bump.bottom, bump.top", this, "sensor");
+		},
+
+		sensor: function(collision){
+			if(collision.obj.isA("Mario")){
+				collision.obj.destroy();
+				Q.stageScene("endGame", 1, {label: "You Won!"});
+			}
+		}
+	});
+
+//------------DEFAULT ENEMY---------------
+	
+	Q.Component("defaultEnemy",{
+		added:function(){
+			this.entity.on("bump.left, bump.right, bump.bottom", function(collision){
+				if(collision.obj.isA("Mario")){
+					collision.obj.p.vy = -400;
+					collision.obj.p.playing = false;
+					collision.obj.del("platformerControls");
+					collision.obj.play("died", 3);
+					Q.stageScene("endGame", 1, {label: "You Died!"});
+				}
+			});
+
+			this.entity.on("bump.top", function(collision){
+				if(collision.obj.isA("Mario")){
+					this.p.living = false;
+					collision.obj.p.vy = -350;
+					this.p.vy = 0;
+					this.play("died",1);
+				}
+			});
+
+			this.entity.on("dying", function(collision){
+				this.destroy();
+			});
 		}
 	});
 }
